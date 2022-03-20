@@ -156,7 +156,7 @@ function Get-NZPhonenumbers {
     get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?64(?:\d{8}|\d{10})(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, FirstName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,  City | export-excel
 }
 
-function Validate-AllUsers {
+function Get-ValidatedUsers {
     
     param (
         [parameter()]
