@@ -220,7 +220,7 @@ function Get-UserDetails {
 
 
 
-function Delete-KFCsUser {
+function Remove-KFCsUser {
 
     param (
         [parameter(Mandatory = $true)]
@@ -230,7 +230,7 @@ function Delete-KFCsUser {
     Set-CsUser -Identity $UPN -EnterpriseVoiceEnabled $false
 }
 
-function new-KFResourceAccount {
+function New-KFResourceAccount {
     param (
         [parameter(Mandatory = $true)]
         $ratype,

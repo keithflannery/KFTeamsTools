@@ -1,5 +1,9 @@
 # Universal psm file
-# Requires -Version 5.0
+#Requires -Version 5.0
+#Requires -Modules @{ ModuleName="MicrosoftTeams"; RequiredVersion="4.0.0" }
+#Requires -Module MSOnline
+#Requires -Module AzureAD
+#Requires -Module ImportExcel
 
 # Import Required Modules
 import-Module MicrosoftTeams, MSOnline, ImportExcel, AzureAD
