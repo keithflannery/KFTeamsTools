@@ -160,7 +160,7 @@ function Get-ValidatedUsers {
     
     param (
         [parameter()]
-        $IgnoreEVDisabled = '$false'
+        [Switch]$IgnoreEVDisabled
     )
 
     if ($IgnoreEVDisabled -eq $true) {
