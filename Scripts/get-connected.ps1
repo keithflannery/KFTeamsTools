@@ -1,7 +1,7 @@
 set-alias -Name Get-Connected -Value Get-ConnectedMFA
 
 function Get-ConnectedMFA {
-    $VoiceSKUs = "BUSINESS_VOICE_DIRECTROUTING", "MCOCV", "MCOEV", "BUSINESS_VOICE_DIRECTROUTING", "ENTERPRISEPREMIUM_NOPSTNCONF"
+    $voiceskus = "BUSINESS_VOICE_DIRECTROUTING", "MCOCV", "MCOEV", "BUSINESS_VOICE_DIRECTROUTING", "ENTERPRISEPREMIUM_NOPSTNCONF", "BUSINESS_VOICE_MED2", "BUSINESS_VOICE_MED2", "SPE_E5"
     write-host "Connecting to 365 Powershell..." -ForegroundColor Green
     Connect-MsolService
     Write-Host "Connecting to AzureAD Powershell..." -ForegroundColor Green

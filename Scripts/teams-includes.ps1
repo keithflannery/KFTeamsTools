@@ -124,6 +124,18 @@ function New-KFCsUser {
             elseif ($LineURI -match '^tel:\+618\d{8}(?:|;ext\=\d+)$') {
                 $TenantDialPlan = "AU-08"
             }
+            elseif ($lineURI -match '^tel:\+643(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                $TenantDialPlan = "NZ-03"
+            }
+            elseif ($lineURI -match '^tel:\+644(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                $TenantDialPlan = "NZ-04"
+            }
+            elseif ($lineURI -match '^tel:\+646(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                $TenantDialPlan = "NZ-06"
+            }
+            elseif ($lineURI -match '^tel:\+647(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                $TenantDialPlan = "NZ-07"
+            }
             elseif ($lineURI -match '^tel:\+64(2|9)(\d{7}|\d{9})(?:|;ext\=\d+)$') {
                 $TenantDialPlan = "NZ-09"
             }
