@@ -104,57 +104,76 @@ function New-KFCsUser {
         $TenantDialPlan
     )
 
-    $licensedusers2 = Get-KFLicensedUsers -licenseskus $voiceskus
-
-    # if ($licensedusers2.Contains($UPN)) {
-    if ($licensedusers2 -contains $UPN) {
-
-        $userdata = get-csonlineuser -id $UPN
-
-        if ($TenantDialPlan -eq $null) {
-            if ($LineURI -match '^tel:\+612\d{8}(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "AU-02"
-            }
-            elseif ($LineURI -match '^tel:\+613\d{8}(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "AU-03"
-            }
-            elseif ($LineURI -match '^tel:\+617\d{8}(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "AU-07"
-            }
-            elseif ($LineURI -match '^tel:\+618\d{8}(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "AU-08"
-            }
-            elseif ($lineURI -match '^tel:\+643(\d{7}|\d{9})(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "NZ-03"
-            }
-            elseif ($lineURI -match '^tel:\+644(\d{7}|\d{9})(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "NZ-04"
-            }
-            elseif ($lineURI -match '^tel:\+646(\d{7}|\d{9})(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "NZ-06"
-            }
-            elseif ($lineURI -match '^tel:\+647(\d{7}|\d{9})(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "NZ-07"
-            }
-            elseif ($lineURI -match '^tel:\+64(2|9)(\d{7}|\d{9})(?:|;ext\=\d+)$') {
-                $TenantDialPlan = "NZ-09"
-            }
-            else {
-                Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU tel:+61736249100, NZ tel:+6495238436"
-                exit
-            }
-        }
-        
-        Set-CsUser -Identity $UPN -EnterpriseVoiceEnabled $true 
-        #if ($userdata.OnPremLineURIManuallySet -eq $false){
-        Set-CSUser -Identity $UPN -LineURI $LineURI
-        #}
-        Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy
-        Grant-CsTenantDialPlan -id $UPN -PolicyName $TenantDialPlan
-
+    if ($LineURI -match '^tel:\+.*$'){
+        Write-Host "WARNING: tel: is no longer required!, automatically omitting tel:" -ForegroundColor Yellow
+        $NewNumber = $LineURI | Select-String -Pattern '^tel:(\+.*)$'
+        $LineURI = $NewNumber.Matches.Groups[1]
+        write-host "    New Number: $($LineURI)" -ForegroundColor Yellow
     }
-    else {
-        Write-Error "User does not have a Voice Enabled license assigned, or doesn't exist! Please assign License in Office 365 portal to $UPN!"
+    
+    $voiceskus = "BUSINESS_VOICE_DIRECTROUTING", "MCOCV", "MCOEV", "BUSINESS_VOICE_DIRECTROUTING", "ENTERPRISEPREMIUM_NOPSTNCONF", "BUSINESS_VOICE_MED2", "BUSINESS_VOICE_MED2", "SPE_E5"
+
+    $userdetails = Get-CsOnlineUser -Identity $UPN
+
+    foreach ($sku in $userdetails.AssignedPlan){
+        if ($sku -in $voiceskus){
+            write-host "$($SKU) is enabled for $($userdetails.DisplayName)" -ForegroundColor Green
+
+            if ($TenantDialPlan -eq $null) {
+                if ($LineURI -match '^(?:|tel:)\+612\d{8}(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "AU-02"
+                }
+                elseif ($LineURI -match '^(?:|tel:)\+613\d{8}(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "AU-03"
+                }
+                elseif ($LineURI -match '^(?:|tel:)\+617\d{8}(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "AU-07"
+                }
+                elseif ($LineURI -match '^(?:|tel:)\+618\d{8}(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "AU-08"
+                }
+                elseif ($lineURI -match '^(?:|tel:)\+643(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "NZ-03"
+                }
+                elseif ($lineURI -match '^(?:|tel:)\+644(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "NZ-04"
+                }
+                elseif ($lineURI -match '^(?:|tel:)\+646(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "NZ-06"
+                }
+                elseif ($lineURI -match '^(?:|tel:)\+647(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "NZ-07"
+                }
+                elseif ($lineURI -match '^(?:|tel:)\+64(2|9)(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+                    $TenantDialPlan = "NZ-09"
+                }
+                else {
+                    Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU +61736249100, NZ +6495238436"
+                    exit
+                }
+            }
+            try {Write-Host "Enabling Enterprise Voice..."
+                Set-CsPhoneNumberAssignment -Identity $UPN -EnterpriseVoiceEnabled $true}
+            catch { write-host "Couldn't enable Enterprise voice" -ForegroundColor Red}
+            #if ($userdata.OnPremLineURIManuallySet -eq $false){
+            
+            try {Write-Host "Setting phone number $($LineURI)..."
+            Set-CsPhoneNumberAssignment -Identity $UPN -PhoneNumber $LineURI -PhoneNumberType DirectRouting}
+            catch {write-host "Couldn't set phone number on user user!" -ForegroundColor Red}
+            #}
+            try {Write-Host "Setting Routing Policy $($OnlineVoiceRoutingPolicy)..."
+                Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy}
+            catch {write-host "Couldn't set Voice Routing Policy on user!" -ForegroundColor Red}
+
+            try {
+                Write-Host "Setting Tenant Dialplan... $($TenantDialPlan)"
+                Grant-CsTenantDialPlan -id $UPN -PolicyName $TenantDialPlan}
+            catch {write-host "Couldn't set TenantDialPlan on user!" -ForegroundColor Red}
+    
+        }
+        else {
+            write-host "User $($UPN) doesn't have a Phone System license assigned!" -ForegroundColor Red
+        }
     }
 }
 
@@ -238,8 +257,9 @@ function Remove-KFCsUser {
         [parameter(Mandatory = $true)]
         $UPN
     )
-    Set-CSUser -Identity $UPN -OnPremLineURI $null
-    Set-CsUser -Identity $UPN -EnterpriseVoiceEnabled $false
+    # Set-CSUser -Identity $UPN -OnPremLineURI $null
+    Remove-CsPhoneNumberAssignment -id $UPN -RemoveAll
+    # Set-CsUser -Identity $UPN -EnterpriseVoiceEnabled $false
 }
 
 function New-KFResourceAccount {
