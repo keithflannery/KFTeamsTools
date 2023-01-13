@@ -180,13 +180,13 @@ function New-KFCsUser {
 }
 
 function Get-Phonenumbers {
-    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, FirstName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,City | export-excel
+    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,City | export-excel
 }
 
 set-alias -Name Get-AUPhonenumbers -Value Get-PhoneNumbers
 
 function Get-NZPhonenumbers {
-    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?64(?:\d{8}|\d{10})(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, FirstName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,  City | export-excel
+    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?64(?:\d{8}|\d{10})(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,  City | export-excel
 }
 
 function Get-ValidatedUsers {
