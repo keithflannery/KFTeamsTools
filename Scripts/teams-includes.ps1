@@ -104,12 +104,7 @@ function New-KFCsUser {
         $TenantDialPlan
     )
 
-    if ($LineURI -match '^tel:\+.*$') {
-        Write-Host "WARNING: tel: is no longer required!, automatically omitting tel:" -ForegroundColor Yellow
-        $NewNumber = $LineURI | Select-String -Pattern '^tel:(\+.*)$'
-        $LineURI = $NewNumber.Matches.Groups[1]
-        write-host "    New Number: $($LineURI)" -ForegroundColor Yellow
-    }
+    $LineURI = Get-LineURI -LineURI $LineURI
     
     $FeatureTypes = "PhoneSystem"
 
@@ -147,7 +142,7 @@ function New-KFCsUser {
                 $TenantDialPlan = "NZ-09"
             }
             else {
-                Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU +61736249100, NZ +6495238436"
+                Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU +61733694714, NZ +6495238436"
                 exit
             }
         }
@@ -352,5 +347,87 @@ function New-KFResourceAccount {
         Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy
         write-host "process complete - please make sure the phone number is set below (if you set one!):" -ForegroundColor Yellow
         Get-CsOnlineApplicationInstance -Identity $UPN | fl
+    }
+}
+
+# Function return the correct tenant dial plan for a given number
+function Get-TenantDialPlan {
+    <#
+    .SYNOPSIS
+    Returns the correct tenant dial plan for a given number
+    .DESCRIPTION
+    Returns the correct tenant dial plan for a given number
+    .EXAMPLE
+    Get-TenantDialPlan -LineURI +61733694714
+    .PARAMETER LineURI
+    The LineURI to check
+    .NOTES
+    #>
+    param (
+        [parameter(Mandatory = $true)]
+        $LineURI
+    )
+    if ($LineURI -match '^(?:|tel:)\+612\d{8}(?:|;ext\=\d+)$') {
+        return "AU-02"
+    }
+    elseif ($LineURI -match '^(?:|tel:)\+613\d{8}(?:|;ext\=\d+)$') {
+        return "AU-03"
+    }
+    elseif ($LineURI -match '^(?:|tel:)\+617\d{8}(?:|;ext\=\d+)$') {
+        return "AU-07"
+    }
+    elseif ($LineURI -match '^(?:|tel:)\+618\d{8}(?:|;ext\=\d+)$') {
+        return "AU-08"
+    }
+    elseif ($lineURI -match '^(?:|tel:)\+643(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+        return "NZ-03"
+    }
+    elseif ($lineURI -match '^(?:|tel:)\+644(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+        return "NZ-04"
+    }
+    elseif ($lineURI -match '^(?:|tel:)\+646(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+        return "NZ-06"
+    }
+    elseif ($lineURI -match '^(?:|tel:)\+647(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+        return "NZ-07"
+    }
+    elseif ($lineURI -match '^(?:|tel:)\+64(2|9)(\d{7}|\d{9})(?:|;ext\=\d+)$') {
+        return "NZ-09"
+    }
+    else {
+        Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU +61733694714, NZ +6495238436"
+        exit
+    }
+}
+
+# function to validate and return a lineuri
+function Get-LineURI {
+    <#
+    .SYNOPSIS
+    Validates and returns a lineuri
+    .DESCRIPTION
+    Validates and returns a lineuri
+    .EXAMPLE
+    Get-LineURI -LineURI +61733694714
+    .PARAMETER LineURI
+    The LineURI to check
+    .NOTES
+    #>
+    param (
+        [parameter(Mandatory = $true)]
+        $LineURI
+    )
+    if ($LineURI -match '^tel:\+.*$') {
+        Write-Host "WARNING: tel: is no longer required!, automatically omitting tel:" -ForegroundColor Yellow
+        $NewNumber = $LineURI | Select-String -Pattern '^tel:(\+.*)$'
+        $LineURI = $NewNumber.Matches.Groups[1]
+        write-host "    New Number: $($LineURI)" -ForegroundColor Yellow
+    }
+    if ($LineURI -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$') {
+        return $LineURI
+    }
+    else {
+        Write-Error "Line URI not a valid Australian/NewZealand Landline Number e.g.: AU +61733694714, NZ +6495238436"
+        exit
     }
 }
