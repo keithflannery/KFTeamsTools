@@ -8,6 +8,8 @@ function Get-ConnectedMFA {
     Connect-AzureAD
     Write-Host "Connecting to Microsoft Teams Powershell..." -ForegroundColor Green
     Connect-MicrosoftTeams
+    Write-Host "Connecting to Microsoft Graph Powershell..." -ForegroundColor Green
+    Connect-MgGraph -Scopes User.ReadWrite.All, Organization.Read.All
 }
 
 function Disconnect-Sessions {

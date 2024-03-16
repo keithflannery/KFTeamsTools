@@ -98,13 +98,13 @@ function New-KFCsUser {
         $LineURI
         ,
         [parameter()]
-        $OnlineVoiceRoutingPolicy = 'MyTeamsVoice'
+        $OnlineVoiceRoutingPolicy = 'YCLTeamsVoice'
         ,
         [parameter()]
         $TenantDialPlan
     )
 
-    if ($LineURI -match '^tel:\+.*$'){
+    if ($LineURI -match '^tel:\+.*$') {
         Write-Host "WARNING: tel: is no longer required!, automatically omitting tel:" -ForegroundColor Yellow
         $NewNumber = $LineURI | Select-String -Pattern '^tel:(\+.*)$'
         $LineURI = $NewNumber.Matches.Groups[1]
@@ -115,7 +115,7 @@ function New-KFCsUser {
 
     $userdetails = Get-CsOnlineUser -Identity $UPN
 
-    if ($FeatureTypes -in $userdetails.FeatureTypes){
+    if ($FeatureTypes -in $userdetails.FeatureTypes) {
         write-host "$($FeatureTypes) is enabled for $($userdetails.DisplayName)" -ForegroundColor Green
 
         if ($TenantDialPlan -eq $null) {
@@ -151,27 +151,42 @@ function New-KFCsUser {
                 exit
             }
         }
-        try {Write-Host "Enabling Enterprise Voice..."
-            Set-CsPhoneNumberAssignment -Identity $UPN -EnterpriseVoiceEnabled $true}
-        catch {throw $_
-            write-host "Couldn't enable Enterprise voice" -ForegroundColor Red}
+        try {
+            Write-Host "Enabling Enterprise Voice..."
+            Set-CsPhoneNumberAssignment -Identity $UPN -EnterpriseVoiceEnabled $true
+        }
+        catch {
+            throw $_
+            write-host "Couldn't enable Enterprise voice" -ForegroundColor Red
+        }
         #if ($userdata.OnPremLineURIManuallySet -eq $false){
         
-        try {Write-Host "Setting phone number $($LineURI)..."
-        Set-CsPhoneNumberAssignment -Identity $UPN -PhoneNumber $LineURI -PhoneNumberType DirectRouting}
-        catch {throw $_
-            write-host "Couldn't set phone number on user user!" -ForegroundColor Red}
+        try {
+            Write-Host "Setting phone number $($LineURI)..."
+            Set-CsPhoneNumberAssignment -Identity $UPN -PhoneNumber $LineURI -PhoneNumberType DirectRouting
+        }
+        catch {
+            throw $_
+            write-host "Couldn't set phone number on user user!" -ForegroundColor Red
+        }
         #}
-        try {Write-Host "Setting Routing Policy $($OnlineVoiceRoutingPolicy)..."
-            Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy}
-        catch {throw $_
-            write-host "Couldn't set Voice Routing Policy on user!" -ForegroundColor Red}
+        try {
+            Write-Host "Setting Routing Policy $($OnlineVoiceRoutingPolicy)..."
+            Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy
+        }
+        catch {
+            throw $_
+            write-host "Couldn't set Voice Routing Policy on user!" -ForegroundColor Red
+        }
 
         try {
             Write-Host "Setting Tenant Dialplan... $($TenantDialPlan)"
-            Grant-CsTenantDialPlan -id $UPN -PolicyName $TenantDialPlan}
-        catch {throw $_
-            write-host "Couldn't set TenantDialPlan on user!" -ForegroundColor Red}
+            Grant-CsTenantDialPlan -id $UPN -PolicyName $TenantDialPlan
+        }
+        catch {
+            throw $_
+            write-host "Couldn't set TenantDialPlan on user!" -ForegroundColor Red
+        }
 
     }
     else {
@@ -180,70 +195,70 @@ function New-KFCsUser {
 }
 
 function Get-Phonenumbers {
-    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,City | export-excel
+    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy, City | export-excel
 }
 
 set-alias -Name Get-AUPhonenumbers -Value Get-PhoneNumbers
 
 function Get-NZPhonenumbers {
-    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?64(?:\d{8}|\d{10})(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy,  City | export-excel
+    get-csonlineuser | where-object { $_.LineUri -match '^(?:|tel:)\+?64(?:\d{8}|\d{10})(?:|;ext\=\d+)$' } | Select-Object UserPrincipalName, GivenName, LastName, DisplayName, LineUri, TenantDialPlan, OnlineVoiceRoutingPolicy, City | export-excel
 }
 
-function Get-ValidatedUsers {
+# function Get-ValidatedUsers {
     
-    param (
-        [parameter()]
-        [Switch]$IgnoreEVDisabled
-    )
+#     param (
+#         [parameter()]
+#         [Switch]$IgnoreEVDisabled
+#     )
 
-    if ($IgnoreEVDisabled -eq $true) {
-        $csonlineusers = get-csonlineuser | Where-Object { $_.EnterpriseVoiceEnabled -eq $true } | select-object FirstName, LastName, EnterpriseVoiceEnabled, HostedVoiceMail, LineURI, UsageLocation, UserPrincipalName, WindowsEmailAddress, SipAddress, OnlineVoiceRoutingPolicy, TenantDialPlan, HostingProvider, TeamsUpgradeEffectiveMode, OnPremLineURIManuallySet, TeamsIPPhonePolicy
-    }
-    else {
-        $csonlineusers = get-csonlineuser | select-object FirstName, LastName, EnterpriseVoiceEnabled, HostedVoiceMail, LineURI, UsageLocation, UserPrincipalName, WindowsEmailAddress, SipAddress, OnlineVoiceRoutingPolicy, TenantDialPlan, HostingProvider, TeamsUpgradeEffectiveMode, OnPremLineURIManuallySet, TeamsIPPhonePolicy        
-    }
-    $licensedusers2 = Get-KFLicensedUsers -licenseskus $voiceskus
+#     if ($IgnoreEVDisabled -eq $true) {
+#         $csonlineusers = get-csonlineuser | Where-Object { $_.EnterpriseVoiceEnabled -eq $true } | select-object FirstName, LastName, EnterpriseVoiceEnabled, HostedVoiceMail, LineURI, UsageLocation, UserPrincipalName, WindowsEmailAddress, SipAddress, OnlineVoiceRoutingPolicy, TenantDialPlan, HostingProvider, TeamsUpgradeEffectiveMode, OnPremLineURIManuallySet, TeamsIPPhonePolicy
+#     }
+#     else {
+#         $csonlineusers = get-csonlineuser | select-object FirstName, LastName, EnterpriseVoiceEnabled, HostedVoiceMail, LineURI, UsageLocation, UserPrincipalName, WindowsEmailAddress, SipAddress, OnlineVoiceRoutingPolicy, TenantDialPlan, HostingProvider, TeamsUpgradeEffectiveMode, OnPremLineURIManuallySet, TeamsIPPhonePolicy        
+#     }
+#     $licensedusers2 = Get-KFLicensedUsers -licenseskus $voiceskus
 
-    $data = @()
+#     $data = @()
 
-    foreach ($user in $csonlineusers) {
-        if ($licensedusers2 -contains $user.UserPrincipalName) {
-            $data += $user
-        }
-    }
+#     foreach ($user in $csonlineusers) {
+#         if ($licensedusers2 -contains $user.UserPrincipalName) {
+#             $data += $user
+#         }
+#     }
 
-    foreach ($user in $data) {
-        $borkedusers = @{}
-        $BORKED = $false
-        $reasons = New-Object System.Collections.Generic.List[string]
+#     foreach ($user in $data) {
+#         $borkedusers = @{}
+#         $BORKED = $false
+#         $reasons = New-Object System.Collections.Generic.List[string]
 
-        if ($user.LineURI -notmatch '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$') {
-            $BORKED = $true
-            $reasons.Add("LineURI Invalid!")
-        }
-        if ($user.EnterpriseVoiceEnabled -eq $false) {
-            $BORKED = $true
-            $reasons.Add("EnterpriseVoiceEnabled is False!")
-        }
-        if ($user.TenantDialPlan -eq $null) {
-            $BORKED = $true
-            $reasons.Add("TenantDialPlan is Empty!")
-        }
-        if ($user.OnlineVoiceRoutingPolicy -eq $null) {
-            $BORKED = $true
-            $reasons.Add('OnlineVoiceRoutingPolicy is Empty!')
-        }
+#         if ($user.LineURI -notmatch '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$') {
+#             $BORKED = $true
+#             $reasons.Add("LineURI Invalid!")
+#         }
+#         if ($user.EnterpriseVoiceEnabled -eq $false) {
+#             $BORKED = $true
+#             $reasons.Add("EnterpriseVoiceEnabled is False!")
+#         }
+#         if ($user.TenantDialPlan -eq $null) {
+#             $BORKED = $true
+#             $reasons.Add("TenantDialPlan is Empty!")
+#         }
+#         if ($user.OnlineVoiceRoutingPolicy -eq $null) {
+#             $BORKED = $true
+#             $reasons.Add('OnlineVoiceRoutingPolicy is Empty!')
+#         }
 
-        if ($BORKED -eq $true) {
-            $borkedusers += @{$user.UserPrincipalName = $reasons }
+#         if ($BORKED -eq $true) {
+#             $borkedusers += @{$user.UserPrincipalName = $reasons }
 
 
-        }
+#         }
 
-        $borkedusers
+#         $borkedusers
 
-    }
-}
+#     }
+# }
 
 
 function Get-UserDetails {
@@ -264,43 +279,78 @@ function Remove-KFCsUser {
 }
 
 function New-KFResourceAccount {
+    <#
+    .SYNOPSIS
+    Creates a new resource account in Teams
+    .DESCRIPTION
+    Creates a new resource account in Teams
+    .EXAMPLE
+    New-KFResourceAccount -ratype aa -UPN aa-61700000000@yesit.com.au -DisplayName "AA-61700000000" -URI 61700000000
+    .EXAMPLE
+    New-KFResourceAccount -ratype cq -UPN cq-61700000000@yesit.com.au -DisplayName "CQ-61700000000" -URI 61700000000
+    .PARAMETER ratype
+    The type of resource account to create, either aa (auto attendent) or cq (call queue)
+    .PARAMETER UPN
+    The User Principal Name of the resource account to create
+    .PARAMETER DisplayName
+    The display name of the resource account to create
+    .PARAMETER usagelocation
+    The usage location of the resource account to create
+    .PARAMETER URI
+    The phone number of the resource account to create
+    .PARAMETER IgnoreWarning
+    Ignore any warnings
+    .PARAMETER OnlineVoiceRoutingPolicy
+    The Online Voice Routing Policy to assign to the resource account
+    .NOTES
+
+    #>
     param (
         [parameter(Mandatory = $true)]
         $ratype,
         $UPN,
         $DisplayName,
-        $URI,
-        $IgnoreWarning = $false
+        $usagelocation = "AU",
+        $URI = $null,
+        $IgnoreWarning = $false,
+        $OnlineVoiceRoutingPolicy = 'YCLTeamsVoice'
     )
-    $sku = Get-MsolAccountSku | where-object {$_.AccountSkuId -match '^.+\:PHONESYSTEM_VIRTUALUSER'}
-
-    write-host "This will take approximatly 'Microsoft' 4 minutes to run..." -ForegroundColor Green
-    if ($IgnoreWarning -eq $false) {
-        write-host "Please ensure you have a spare 'Virtual Phone System' User!" -ForegroundColor Yellow
-        $confirmation = Read-Host "Ok? [y/n]"
-        while($confirmation -ne "y"){
-            if ($confirmation -eq 'n') {exit}
-            $confirmation = Read-Host "Ok? [y/n]"
-        }
-    }
-    if ($ratype -eq 'aa'){
+    if ($ratype -eq 'aa') {
         $appid = 'ce933385-9390-45d1-9512-c8d228074e07'
     }
-    Elseif ($ratype -eq 'cq'){
+    Elseif ($ratype -eq 'cq') {
         $appid = '11cd3e2e-fccb-42ad-ad00-878b93575e07'
     }
     else {
-        write-host 'Need to specifiy resourse account type -ratype aa (auto attendent), -ratype cq (call queue)!' -ForegroundColor Red
+        Get-Help New-KFResourceAccount
+        Get-Help New-KFResourceAccount -Examples
         exit
     }
+    # Create the account and wait 30 seconds for it to be created
+    write-host "Creating new resource account...$(UPN)"
     New-CsOnlineApplicationInstance -UserPrincipalName $UPN -DisplayName $DisplayName -ApplicationId $appid
-    start-sleep -Seconds 120
-    Set-MsolUser -UserPrincipalName $UPN -UsageLocation "AU"
-    Set-MsolUserLicense -UserPrincipalName $UPN -AddLicenses $sku.AccountSkuId
-    Start-Sleep -Seconds 120
-    # Set-CsOnlineApplicationInstance -Identity $UPN -OnpremPhoneNumber $URI
-    Set-CsPhoneNumberAssignment -Identity $UPN -PhoneNumber $URI -PhoneNumberType DirectRouting
-    start-sleep -Seconds 5
-    write-host "process complete - please make sure the phone number is set below (if you set one!):" -ForegroundColor Yellow
-    Get-CsOnlineApplicationInstance -Identity $UPN
+    start-sleep -Seconds 30
+
+    # Set the Usage Location to AU
+    Update-MgUser -UserId $UPN -UsageLocation $usagelocation
+
+    # Check if theres enough licenses to assign Virtual User to the account
+    $vu_sku = Get-MgSubscribedSku -All | Where SkuPartNumber -eq 'PHONESYSTEM_VIRTUALUSER'
+    $vu_free = $vu_sku.PrepaidUnits.Enabled - $vu_sku.ConsumedUnits
+    if ($vu_free -lt 1) {
+        write-host "You have no free Virtual User Licenses! Purchase more in the 365 portal and try again! (don't panic, they are free!!)" -ForegroundColor Red
+        exit
+    }
+    else {
+        write-host "Assigning license and waiting 2 mins for license to apply..."
+        Set-MgUserLicense -UserId $UPN -AddLicenses @{SkuId = $vu_sku.SkuId } -RemoveLicenses @()
+        Start-Sleep -Seconds 120
+        write-host "Setting phone number $($URI)..."
+        Set-CsPhoneNumberAssignment -Identity $UPN -PhoneNumber $URI -PhoneNumberType DirectRouting
+        start-sleep -Seconds 10
+        write-host "Setting Routing Policy $($OnlineVoiceRoutingPolicy)..."
+        Grant-CsOnlineVoiceRoutingPolicy -id $UPN -PolicyName $OnlineVoiceRoutingPolicy
+        write-host "process complete - please make sure the phone number is set below (if you set one!):" -ForegroundColor Yellow
+        Get-CsOnlineApplicationInstance -Identity $UPN | fl
+    }
 }
