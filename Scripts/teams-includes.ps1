@@ -332,6 +332,9 @@ function Get-TenantDialPlan {
     elseif ($LineURI -match '^(?:|tel:)\+618\d{8}(?:|;ext\=\d+)$') {
         return "AU-08"
     }
+    elseif ($LineURI -match '^(?:|tel:)\+611300\d{6}(?:|;ext\=\d+)$') {
+        return "AU-National"
+    }
     elseif ($lineURI -match '^(?:|tel:)\+643(\d{7}|\d{9})(?:|;ext\=\d+)$') {
         return "NZ-03"
     }
@@ -376,7 +379,7 @@ function Get-LineURI {
         $LineURI = $NewNumber.Matches.Groups[1]
         write-host "    New Number: $($LineURI)" -ForegroundColor Yellow
     }
-    if ($LineURI -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)$') {
+    if ($LineURI -match '^(?:|tel:)\+?61[2378]\d{8}(?:|;ext\=\d+)|(?:|tel:)\+?611300\d{6}(?:|;ext\=\d+)$') {
         return $LineURI
     }
     else {
@@ -428,6 +431,6 @@ function New-TenantSetup {
     Set-CsOnlinePstnUsage -Identity Global -Usage @{Add = "YCLTeamsVoice" }
     New-CsOnlineVoiceRoute -Identity "YCLTeamsVoice" -NumberPattern ".*" -OnlinePstnGatewayList $sbc_fqdn -OnlinePstnUsages "YCLTeamsVoice"
     New-CsOnlineVoiceRoutingPolicy -id YCLTeamsVoice -OnlinePstnUsages "YCLTeamsVoice" -Description "Yes Cloud Voice Routing Policy"
-    Set-CsTeamsCallingPolicy -Identity Global -SafeTransferEnabled Enabled -BusyOnBusyEnabledType Enabled
+    Set-CsTeamsCallingPolicy -Identity Global -BusyOnBusyEnabledType Enabled
     Add-DialPlans
 }
